@@ -1,0 +1,18 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SongTitle snapshot test > renders correct w/ different props 1`] = `
+<DocumentFragment>
+  <div
+    class="text-center"
+  >
+    <h2
+      class="text-lg font-semibold"
+    />
+    <p
+      class="text-sm text-gray-500"
+    >
+      Echos of the Sea
+    </p>
+  </div>
+</DocumentFragment>
+`;

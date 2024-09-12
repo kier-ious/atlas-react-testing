@@ -1,0 +1,15 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CoverArt snapshot test > renders correct w/ different props 1`] = `
+<DocumentFragment>
+  <div
+    class="border-4 border-accent w-64 h-64 bg-gray-200 flex items-center justify-center rounded-lg overflow-hidden"
+  >
+    <img
+      alt="Cover Art"
+      class="object-cover w-full h-full"
+      src=""
+    />
+  </div>
+</DocumentFragment>
+`;

@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PlayListItem snapshot test > renders correct w/ different props 1`] = `
+<DocumentFragment>
+  <li
+    class="flex justify-between bg-whitebg-secondary rounded-lg cursor-pointer"
+  >
+    <div>
+      <h3
+        class="text-md font-semibold"
+      />
+      <p
+        class="text-sm text-gray-500"
+      />
+    </div>
+    <p
+      class="text-sm text-gray-500"
+    />
+  </li>
+</DocumentFragment>
+`;
