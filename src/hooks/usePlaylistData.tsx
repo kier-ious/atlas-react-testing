@@ -12,6 +12,7 @@ export const usePlaylistData = () => {
   const [data, setData] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<Song | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // This fetches current song playing from API and mounts component
@@ -32,6 +33,7 @@ export const usePlaylistData = () => {
       } catch (error) {
         console.error('Error fetching the playlist:', error);
           setLoading(false);
+          setError('Error fetching data!!!')
           setCurrentlyPlaying(null);
       }
     };
@@ -39,5 +41,5 @@ export const usePlaylistData = () => {
     fetchPlaylist();
   }, []);
 
-  return { data, loading, currentlyPlaying };
+  return { data, loading, currentlyPlaying, error };
 };
