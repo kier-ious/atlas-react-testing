@@ -6,6 +6,7 @@ interface Song {
   title: string;
   artist: string;
   cover: string;
+  genre: string;
 }
 
 export const usePlaylistData = () => {
@@ -27,7 +28,7 @@ export const usePlaylistData = () => {
           setCurrentlyPlaying(fetchedData[0]);
           setLoading(true);
         } else {
-          setLoading(false);
+          setLoading(true);
           setCurrentlyPlaying(null);
         }
       } catch (error) {

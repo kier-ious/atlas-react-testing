@@ -1,7 +1,7 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { vi, expect, test, beforeEach } from "vitest";
-import MusicPlayer from "../MusicPlayer";
-import { usePlaylistData } from "../hooks/usePlaylistData";
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import MusicPlayer from '../MusicPlayer';
+import { vi, test, expect, beforeEach } from 'vitest';
+import { usePlaylistData } from '../hooks/usePlaylistData';
 
 
 vi.mock('../hooks/usePlaylistData', () => ({
@@ -17,6 +17,7 @@ describe('MusicPlayer component', () => {
     (vi.mocked(usePlaylistData)).mockReturnValueOnce({
       data: [],
       loading: false,
+      currentlyPlaying: null,
       error: 'Error fetching data!!!',
     });
 
@@ -24,8 +25,8 @@ describe('MusicPlayer component', () => {
     await waitFor(() => expect(screen.getByText(/Error fetching/i)).toBeInTheDocument());
   });
 
-  test('fetch first track correctly', async () => {
-    (vi.mocked(usePlaylistData) ).mockReturnValueOnce({
+  test('fetches and displays first track correctly', async () => {
+    (vi.mocked(usePlaylistData)).mockReturnValueOnce({
       data: [
         {
           "id": 1,
@@ -45,6 +46,14 @@ describe('MusicPlayer component', () => {
         },
       ],
       loading: false,
+      currentlyPlaying: {
+        id: 1,
+        title: "Painted in Blue",
+        artist: "Soul Canvas",
+        genre: "Neo-Soul",
+        duration: "5:55",
+        cover: "https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/images/albumn4.webp"
+      },
       error: null,
     });
 
@@ -53,7 +62,7 @@ describe('MusicPlayer component', () => {
   });
 
   test('Updates song when new song is selected', async () => {
-    (vi.mocked(usePlaylistData) ).mockReturnValueOnce({
+    (vi.mocked(usePlaylistData)).mockReturnValueOnce({
       data: [
         {
           "id": 3,
@@ -83,7 +92,7 @@ describe('MusicPlayer component', () => {
   });
 
   test('Plays next song when forward btn is clicked', async () => {
-    (vi.mocked(usePlaylistData) ).mockReturnValueOnce({
+    (vi.mocked(usePlaylistData)).mockReturnValueOnce({
       data: [
         {
           "id": 5,
@@ -103,6 +112,14 @@ describe('MusicPlayer component', () => {
         },
       ],
       loading: false,
+      currentlyPlaying: {
+        id: 5,
+        title: "Whispers in the Wind",
+        artist: "Rust & Ruin",
+        genre: "Folk",
+        duration: "6:13",
+        cover: "https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/images/albumn3.webp"
+      },
       error: null,
     });
 
@@ -113,7 +130,7 @@ describe('MusicPlayer component', () => {
   });
 
   test('Play/Pause toggles correctly', async () => {
-    (vi.mocked(usePlaylistData) ).mockReturnValueOnce({
+    (vi.mocked(usePlaylistData)).mockReturnValueOnce({
       data: [
         {
           "id": 7,
@@ -132,10 +149,12 @@ describe('MusicPlayer component', () => {
     const playBtn = screen.getByRole('button', { name: /Play/i });
     fireEvent.click(playBtn);
     await waitFor(() => expect(screen.getByRole('button', { name: /Pause/i })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: /Pause/i }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /Play/i })).toBeInTheDocument());
   });
 
   test('Shuffles correctly', async () => {
-    (vi.mocked(usePlaylistData) ).mockReturnValueOnce({
+    (vi.mocked(usePlaylistData)).mockReturnValueOnce({
       data: [
         {
           "id": 8,
@@ -161,7 +180,8 @@ describe('MusicPlayer component', () => {
     render(<MusicPlayer />);
     const shuffleBtn = screen.getByRole('button', { name: /Shuffle/i});
     fireEvent.click(shuffleBtn);
-    fireEvent.click(screen.getByRole('button', { name: /Forward/i }));
-    await waitFor (() => expect(screen.queryByText(/Edge of the Abyss/i)).not.toBeInTheDocument());
+    const forwardBtn = screen.getByRole('button', { name: /Forward/i });
+    fireEvent.click(forwardBtn);
+    await waitFor(() => expect(screen.queryByText(/Edge of the Abyss/i)).not.toBeInTheDocument());
   });
 });
