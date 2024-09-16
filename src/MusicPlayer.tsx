@@ -13,7 +13,7 @@ interface Song {
 }
 
 export default function MusicPlayer() {
-  const { data = [], loading, currentlyPlaying: currentPlaying, error } = usePlaylistData();
+  const { data, loading, currentlyPlaying: currentPlaying, error } = usePlaylistData();
   const [currentlyPlaying, setCurrentlyPlaying] = useState<Song | null>(null);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [speed, setSpeed] = useState(1);

@@ -26,11 +26,11 @@ export const usePlaylistData = () => {
 
         if (fetchedData.length > 0) {
           setCurrentlyPlaying(fetchedData[0]);
-          setLoading(true);
+          // setLoading(true);
         } else {
-          setLoading(true);
           setCurrentlyPlaying(null);
         }
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching the playlist:', error);
           setLoading(false);
