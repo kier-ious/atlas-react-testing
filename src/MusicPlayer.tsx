@@ -64,11 +64,11 @@ export default function MusicPlayer() {
     setShuffle(prevShuffle => !prevShuffle);
   };
 
+  const playlist = Array.isArray(data) ? data : [];
+
   if (loading) return <div className="font-primary text-2xl font-bold mb-4">Loading...</div>;
   if (error) return <div className="font-primary text-2xl font-bold mb-4 text-red-600">{error}</div>;
   if (!currentlyPlaying) return <div className="font-primary text-2xl font-bold mb-4">No song is currently playing</div>;
-
-  const playlist = Array.isArray(data) ? data : [];
 
   return (
     <div className="bg-primary p-6 rounded-lg w-full max-w-screen-md mx-auto shadow-md
