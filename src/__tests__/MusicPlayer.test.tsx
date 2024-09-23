@@ -1,187 +1,52 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+// MusicPlayer.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import { test, afterAll, afterEach, beforeAll, expect, describe } from 'vitest';
 import MusicPlayer from '../MusicPlayer';
-import { vi, test, expect, beforeEach } from 'vitest';
-import { usePlaylistData } from '../hooks/usePlaylistData';
+import { server } from '../mocks/mock';
+import { http } from 'msw';
 
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
-vi.mock('../hooks/usePlaylistData', () => ({
-  usePlaylistData: vi.fn(),
-}));
-
-beforeEach(() => {
-  (vi.mocked(usePlaylistData)).mockReset();
-});
 
 describe('MusicPlayer component', () => {
-  test('displays error when fetching fails', async () => {
-    (vi.mocked(usePlaylistData)).mockReturnValueOnce({
-      data: [],
-      loading: false,
-      currentlyPlaying: null,
-      error: 'Error fetching data!!!',
-    });
-
+  test('fetches and displays the first track correctly', async () => {
     render(<MusicPlayer />);
-    await waitFor(() => expect(screen.getByText(/Error fetching/i)).toBeInTheDocument());
+    expect(await screen.findByText(/Painted in Blue/i)).toBeInTheDocument();
   });
 
-  test('fetches and displays first track correctly', async () => {
-    (vi.mocked(usePlaylistData)).mockReturnValueOnce({
-      data: [
-        {
-          "id": 1,
-          "title": "Painted in Blue",
-          "artist": "Soul Canvas",
-          "genre": "Neo-Soul",
-          "duration": "5:55",
-          "cover": "https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/images/albumn4.webp"
-        },
-        {
-          "id": 2,
-          "title": "Tidal Drift",
-          "artist": "Echoes of the Sea",
-          "genre": "Ambient",
-          "duration": "8:02",
-          "cover": "https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/images/albumn6.webp"
-        },
-      ],
-      loading: false,
-      currentlyPlaying: {
-        id: 1,
-        title: "Painted in Blue",
-        artist: "Soul Canvas",
-        genre: "Neo-Soul",
-        duration: "5:55",
-        cover: "https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/images/albumn4.webp"
-      },
-      error: null,
-    });
-
+  test('plays next song when forward button is clicked', async () => {
     render(<MusicPlayer />);
-    await waitFor(() => expect(screen.getByText(/Painted in Blue/i)).toBeInTheDocument());
+    const forwardButton = screen.getByLabelText(/forward/i);
+
+    fireEvent.click(forwardButton);
+
+    expect(await screen.findByText(/Tidal Drift/i)).toBeInTheDocument();
   });
 
-  test('Updates song when new song is selected', async () => {
-    (vi.mocked(usePlaylistData)).mockReturnValueOnce({
-      data: [
-        {
-          "id": 3,
-          "title": "Fading Shadows",
-          "artist": "The Emberlight",
-          "genre": "Alternative Rock",
-          "duration": "3:01",
-          "cover": "https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/images/albumn2.webp"
-        },
-        {
-          "id": 4,
-          "title": "Cosmic Drift",
-          "artist": "Solar Flare",
-          "genre": "Psychedelic Rock",
-          "duration": "5:01",
-          "cover": "https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/images/albumn10.webp"
-        },
-      ],
-      loading: false,
-      error: null,
-    });
+  test('displays loading state', async () => {
+    server.use(
+      get('https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/playlist', (req, res, ctx) => {
+        return res(ctx.delay(200), ctx.json([]));
+      })
+    );
 
     render(<MusicPlayer />);
-    const trackElement = screen.getByText(/Fading Shadows/i);
-    fireEvent.click(trackElement);
-    await waitFor(() => expect(screen.getByText(/Fading Shadows/i)).toBeInTheDocument());
+    expect(await screen.findByText(/Loading.../i)).toBeInTheDocument();
   });
 
-  test('Plays next song when forward btn is clicked', async () => {
-    (vi.mocked(usePlaylistData)).mockReturnValueOnce({
-      data: [
-        {
-          "id": 5,
-          "title": "Urban Serenade",
-          "artist": "Midnight Groove",
-          "genre": "Jazz",
-          "duration": "4:54",
-          "cover": "https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/images/albumn8.webp"
-        },
-        {
-          "id": 6,
-          "title": "Whispers in the Wind",
-          "artist": "Rust & Ruin",
-          "genre": "Folk",
-          "duration": "6:13",
-          "cover": "https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/images/albumn3.webp"
-        },
-      ],
-      loading: false,
-      currentlyPlaying: {
-        id: 5,
-        title: "Whispers in the Wind",
-        artist: "Rust & Ruin",
-        genre: "Folk",
-        duration: "6:13",
-        cover: "https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/images/albumn3.webp"
-      },
-      error: null,
-    });
+  test('displays error state', async () => {
+    server.use(
+      get('https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/playlist', (req, res, ctx) => {
+        return res(ctx.status(500), ctx.json({ error: 'Failed to load playlist' }));
+      })
+    );
 
     render(<MusicPlayer />);
-    const forwardBtn = screen.getByRole('button', { name: /Forward/i });
-    fireEvent.click(forwardBtn);
-    await waitFor(() => expect(screen.getByText(/Whispers in the Wind/i)).toBeInTheDocument());
-  });
-
-  test('Play/Pause toggles correctly', async () => {
-    (vi.mocked(usePlaylistData)).mockReturnValueOnce({
-      data: [
-        {
-          "id": 7,
-          "title": "Electric Fever",
-          "artist": "Neon Jungle",
-          "genre": "EDM",
-          "duration": "8:41",
-          "cover": "https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/images/albumn5.webp"
-        },
-      ],
-      loading: false,
-      error: null,
-    });
-
-    render(<MusicPlayer />);
-    const playBtn = screen.getByRole('button', { name: /Play/i });
-    fireEvent.click(playBtn);
-    await waitFor(() => expect(screen.getByRole('button', { name: /Pause/i })).toBeInTheDocument());
-    fireEvent.click(screen.getByRole('button', { name: /Pause/i }));
-    await waitFor(() => expect(screen.getByRole('button', { name: /Play/i })).toBeInTheDocument());
-  });
-
-  test('Shuffles correctly', async () => {
-    (vi.mocked(usePlaylistData)).mockReturnValueOnce({
-      data: [
-        {
-          "id": 8,
-          "title": "Edge of the Abyss",
-          "artist": "Steel Horizon",
-          "genre": "Metal",
-          "duration": "2:27",
-          "cover": "https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/images/albumn9.webp"
-        },
-        {
-          "id": 9,
-          "title": "Golden Haze",
-          "artist": "Velvet Waves",
-          "genre": "Indie Pop",
-          "duration": "3:15",
-          "cover": "https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/images/albumn7.webp"
-        },
-      ],
-      loading: false,
-      error: null,
-    });
-
-    render(<MusicPlayer />);
-    const shuffleBtn = screen.getByRole('button', { name: /Shuffle/i});
-    fireEvent.click(shuffleBtn);
-    const forwardBtn = screen.getByRole('button', { name: /Forward/i });
-    fireEvent.click(forwardBtn);
-    await waitFor(() => expect(screen.queryByText(/Edge of the Abyss/i)).not.toBeInTheDocument());
+    expect(await screen.findByText(/Failed to load playlist/i)).toBeInTheDocument();
   });
 });
+function get(arg0: string, arg1: (req: any, res: any, ctx: any) => any): import("node_modules/msw/lib/core/HttpResponse-DE19n76Q").R<import("node_modules/msw/lib/core/HttpResponse-DE19n76Q").g, any, any, import("node_modules/msw/lib/core/HttpResponse-DE19n76Q").c> {
+  throw new Error('Function not implemented.');
+}

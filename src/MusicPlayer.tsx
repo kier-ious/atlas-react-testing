@@ -3,17 +3,17 @@ import { CurrentlyPlaying } from './components/CurrentlyPlaying';
 import { Playlist } from './components/Playlist';
 import { usePlaylistData } from './hooks/usePlaylistData';
 
-
 interface Song {
   id: number;
   title: string;
   artist: string;
-  duration: string;
   cover: string;
+  genre: string;
+  duration: string;
 }
 
 export default function MusicPlayer() {
-  const { data, loading, currentlyPlaying: currentPlaying, error } = usePlaylistData();
+  const { data = [], loading, currentlyPlaying: currentPlaying, error } = usePlaylistData();
   const [currentlyPlaying, setCurrentlyPlaying] = useState<Song | null>(null);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [speed, setSpeed] = useState(1);
@@ -21,32 +21,38 @@ export default function MusicPlayer() {
   const [shuffle, setShuffle] = useState(false);
 
   useEffect(() => {
-      setCurrentlyPlaying(currentPlaying);
-  }, [currentPlaying]);
+    if (currentPlaying) {
+      setCurrentlyPlaying(currentPlaying as Song);
+      setCurrentSongIndex(data?.findIndex(song => song.id === currentPlaying?.id) || 0);
+    }
+  }, [currentPlaying, data]);
 
   const handleSongSelect = (title: string) => {
-    const selectedSong = playlist.find(song => song.title === title) || null;
+    const selectedSong = data.find((song: Song) => song.title.toLowerCase() === title.toLowerCase()) || null;
     setCurrentlyPlaying(selectedSong);
-    setCurrentSongIndex(playlist.indexOf(selectedSong as Song));
+
+    if (selectedSong) {
+      setCurrentSongIndex(data.findIndex(song => song.id === selectedSong.id));
+    }
   };
 
   const handleBack = () => {
-    setCurrentSongIndex((prevIndex) => {
-      const newIndex = prevIndex > 0 ? prevIndex - 1 : 0;
-      setCurrentlyPlaying(playlist[newIndex] || null);
+    setCurrentSongIndex(prevIndex => {
+      const newIndex = prevIndex > 0 ? prevIndex - 1 : data.length - 1;
+      setCurrentlyPlaying(data[newIndex] || null);
       return newIndex;
     });
   };
 
   const handleForward = () => {
-    setCurrentSongIndex((prevIndex) => {
+    setCurrentSongIndex(prevIndex => {
       if (shuffle) {
-        const randomIndex = Math.floor(Math.random() * playlist.length);
-        setCurrentlyPlaying(playlist[randomIndex]);
+        const randomIndex = Math.floor(Math.random() * data.length);
+        setCurrentlyPlaying(data[randomIndex]);
         return randomIndex;
       } else {
-        const newIndex = prevIndex < playlist.length - 1 ? prevIndex + 1 : playlist.length - 1;
-        setCurrentlyPlaying(playlist[newIndex] || null);
+        const newIndex = prevIndex < data.length - 1 ? prevIndex + 1 : 0;
+        setCurrentlyPlaying(data[newIndex] || null);
         return newIndex;
       }
     });
@@ -68,14 +74,14 @@ export default function MusicPlayer() {
 
   if (loading) return <div className="font-primary text-2xl font-bold mb-4">Loading...</div>;
   if (error) return <div className="font-primary text-2xl font-bold mb-4 text-red-600">{error}</div>;
-  if (!currentlyPlaying) return <div className="font-primary text-2xl font-bold mb-4">No song is currently playing</div>;
+  if (!playlist.length) return <div className="font-primary text-2xl font-bold mb-4">No songs available</div>;
 
   return (
     <div className="bg-primary p-6 rounded-lg w-full max-w-screen-md mx-auto shadow-md
                     border-gray-300 flex flex-col md:flex-row items-center
                     md:items-start space-y-6 md:space-y-0 md:space-x-6">
       <div className="w-full md:w-1/2">
-      <CurrentlyPlaying
+        <CurrentlyPlaying
           currentSong={currentlyPlaying}
           onBack={handleBack}
           onForward={handleForward}
@@ -94,7 +100,6 @@ export default function MusicPlayer() {
           playlist={playlist}
         />
       </div>
-
     </div>
   );
-};
+}

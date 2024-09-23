@@ -1,17 +1,19 @@
 import React from 'react';
 import { PlayListItem } from './PlayListItem';
 
-interface Song {
-  id: number;
-  title: string;
-  artist: string;
-  duration: string;
-}
+// interface Song {
+//   id: number;
+//   title: string;
+//   artist: string;
+//   duration: string;
+// }
 
 interface PlayListProps {
   currentlyPlaying: string | null;
   onSongSelect: (title: string) => void;
-  playlist: Song[];
+  playlist: Array<{
+    duration: string;id: number; title: string; artist: string; cover: string
+}>
 }
 
 export const Playlist: React.FC<PlayListProps> = ({ currentlyPlaying, onSongSelect, playlist }) => {

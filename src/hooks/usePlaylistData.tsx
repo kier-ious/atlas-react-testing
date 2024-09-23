@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 
-
 interface Song {
   id: number;
   title: string;
@@ -12,34 +11,25 @@ interface Song {
 export const usePlaylistData = () => {
   const [data, setData] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentlyPlaying, setCurrentlyPlaying] = useState<Song | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<Song | null>(null);
 
   useEffect(() => {
-    // This fetches current song playing from API and mounts component
-    const fetchPlaylist = async () => {
+    const fetchData = async () => {
       try {
         const response = await fetch('https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/playlist');
-        const fetchedData: Song[] = await response.json();
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setData(fetchedData);
+        const result = await response.json();
 
-        if (fetchedData.length > 0) {
-          setCurrentlyPlaying(fetchedData[0]);
-          // setLoading(true);
-        } else {
-          setCurrentlyPlaying(null);
-        }
+        setData(result);
+        setCurrentlyPlaying(result[0]);
         setLoading(false);
-      } catch (error) {
-        console.error('Error fetching the playlist:', error);
-          setLoading(false);
-          setError('Error fetching data!!!')
-          setCurrentlyPlaying(null);
+      } catch (err) {
+        setError('Failed to load playlist');
+        setLoading(false);
       }
     };
 
-    fetchPlaylist();
+    fetchData();
   }, []);
 
   return { data, loading, currentlyPlaying, error };

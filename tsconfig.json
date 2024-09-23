@@ -20,6 +20,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "mock.ts"],
+  "include": ["src", "src/mocks/mock.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
