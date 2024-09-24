@@ -1,6 +1,7 @@
 import { render, screen, userEvent, waitFor } from '@testing-library/react';
 import { test, beforeEach, beforeAll, afterEach, expect } from 'vitest';
 import MusicPlayer from '../MusicPlayer';
+import { PlayControls } from '../components/PlayControls';
 import { server, get } from '../mocks/mock';
 
 
@@ -27,12 +28,13 @@ test('Fetches and displays the first track correctly(PASSING)', async () => {
 
 
 
-  test('Plays next song when forward button is clicked', async () => {
-    render(<MusicPlayer />);
-    const forwardButton = screen.getByRole('button', { name: /forward/i });
-    await userEvent.click(forwardButton);
-    await waitFor(() => expect(screen.getByText(/Tidal Drift/i)).toBeInTheDocument());
-  });
+test('Plays next song when forward button is clicked', async () => {
+  render(<MusicPlayer />);
+  await waitFor(() => expect(screen.getByText(/Tidal Drift/i)).toBeInTheDocument());
+  const forwardButton = screen.getByRole('button', { name: /Forward/i });
+  await userEvent.click(forwardButton);
+  await waitFor(() => expect(screen.getByText(/Different Song/i)).toBeInTheDocument());
+});
 
 
 
