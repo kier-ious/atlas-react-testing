@@ -1,29 +1,40 @@
-// MusicPlayer.test.tsx
-import { render, screen, fireEvent } from '@testing-library/react';
-import { test, afterAll, afterEach, beforeAll, expect, describe } from 'vitest';
+import { render, screen, userEvent, waitFor } from '@testing-library/react';
+import { test, beforeEach, beforeAll, afterEach, expect } from 'vitest';
 import MusicPlayer from '../MusicPlayer';
-import { server } from '../mocks/mock';
-import { http } from 'msw';
-
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+import { server, get } from '../mocks/mock';
 
 
-describe('MusicPlayer component', () => {
-  test('fetches and displays the first track correctly', async () => {
+beforeEach(() => {
+  render(<MusicPlayer />);
+});
+
+beforeAll(() => {
+  server.listen();
+});
+
+afterEach(() => {
+  server.close();
+});
+
+
+test('Fetches and displays the first track correctly(PASSING)', async () => {
+  render(<MusicPlayer />);
+  await waitFor(() => {
+    const trackElements = screen.getAllByText(/Painted in Blue/i);
+    expect(trackElements.length).toBeGreaterThan(0);
+  });
+});
+
+
+
+  test('Plays next song when forward button is clicked', async () => {
     render(<MusicPlayer />);
-    expect(await screen.findByText(/Painted in Blue/i)).toBeInTheDocument();
+    const forwardButton = screen.getByRole('button', { name: /forward/i });
+    await userEvent.click(forwardButton);
+    await waitFor(() => expect(screen.getByText(/Tidal Drift/i)).toBeInTheDocument());
   });
 
-  test('plays next song when forward button is clicked', async () => {
-    render(<MusicPlayer />);
-    const forwardButton = screen.getByLabelText(/forward/i);
 
-    fireEvent.click(forwardButton);
-
-    expect(await screen.findByText(/Tidal Drift/i)).toBeInTheDocument();
-  });
 
   test('displays loading state', async () => {
     server.use(
@@ -31,10 +42,11 @@ describe('MusicPlayer component', () => {
         return res(ctx.delay(200), ctx.json([]));
       })
     );
-
     render(<MusicPlayer />);
     expect(await screen.findByText(/Loading.../i)).toBeInTheDocument();
   });
+
+
 
   test('displays error state', async () => {
     server.use(
@@ -42,11 +54,6 @@ describe('MusicPlayer component', () => {
         return res(ctx.status(500), ctx.json({ error: 'Failed to load playlist' }));
       })
     );
-
     render(<MusicPlayer />);
     expect(await screen.findByText(/Failed to load playlist/i)).toBeInTheDocument();
   });
-});
-function get(arg0: string, arg1: (req: any, res: any, ctx: any) => any): import("node_modules/msw/lib/core/HttpResponse-DE19n76Q").R<import("node_modules/msw/lib/core/HttpResponse-DE19n76Q").g, any, any, import("node_modules/msw/lib/core/HttpResponse-DE19n76Q").c> {
-  throw new Error('Function not implemented.');
-}
