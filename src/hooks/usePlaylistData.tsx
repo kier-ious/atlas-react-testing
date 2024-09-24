@@ -1,33 +1,36 @@
 import { useState, useEffect } from 'react';
+import { Song } from '../components/MusicPlayer';
 
-interface Song {
-  id: number;
-  title: string;
-  artist: string;
-  cover: string;
-  genre: string;
-}
 
-export const usePlaylistData = () => {
+export function usePlaylistData(): {
+  data: Song[];
+  loading: boolean;
+  currentlyPlaying: Song | null;
+  error: string | null;
+} {
   const [data, setData] = useState<Song[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [currentlyPlaying] = useState<Song | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [currentlyPlaying, setCurrentlyPlaying] = useState<Song | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
       try {
-        const response = await fetch('https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/playlist');
-        const result = await response.json();
-
-        setData(result);
-        setCurrentlyPlaying(result[0]);
-        setLoading(false);
-      } catch (err) {
+        const res = await fetch('https://raw.githubusercontent.com/atlas-jswank/atlas-music-player-api/main/playlist');
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const songs: Song[] = await res.json();
+        setData(songs);
+      } catch (error) {
         setError('Failed to load playlist');
+        console.error('Failed to load playlist', error);
+      } finally {
         setLoading(false);
       }
-    };
+    }
 
     fetchData();
   }, []);
